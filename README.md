@@ -1,2 +1,5 @@
-# TestM5Stack
-TestM5Stack
+# TestArduino
+
+Arduino、M5Stackなどサンプル、検証スケッチのアップロード
+
+各フォルダにはメモのreadme.mdをプッシュすること
