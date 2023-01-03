@@ -25,6 +25,7 @@ m5ライブラリはちゃんとローカルにある・・
 わからん
 
 目を動かすサンプル作成完了
+[eye](https://github.com/Nagaholish/TestArduino/blob/main/M5Atom/M5Atom_matrix_eye/M5Atom_matrix_eye.gif)
 
 2023/01/03
 ようやくM5AtomMatrixを買って、接続した
