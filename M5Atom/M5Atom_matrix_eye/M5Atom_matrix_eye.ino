@@ -11,8 +11,10 @@ void setup()
     M5.begin(true, false, true); //シリアルポートバッファをクリアし、シリアルポートのボーレートを115200に設定し、LEDマトリックスを初期化する。 清空串口缓区,设置串口波特率为115200；初始化led矩阵
     M5.dis.fillpix(0x000000); // 0xff0000をLEDドットマトリクス全体に塗りつぶす。 将 0xff0000 填充至整个LED点阵
     //delay(50);
-
+    
     look(2,2);
+
+    M5.IMU.Init();
 }
 
 const int EYE_COLOR_BG    = 0x000000;
@@ -61,4 +63,30 @@ void loop()
     Serial.println("dd");
     look(1, 4);
     delay(1000);
+
+    char buff[ 512 ];
+    
+    float gx, gy, gz;
+    M5.IMU.getGyroData(&gx, &gy, &gz);
+    sprintf(buff, "gyr:%f,%f,%f", gx, gy, gz);
+    Serial.println(buff);
+    Serial.flush();
+    
+    float temp;
+    M5.IMU.getTempData(&temp);
+    sprintf(buff, "temp:%f", temp);
+    Serial.println(buff);
+    Serial.flush();
+    
+    float ax, ay, az;
+    M5.IMU.getAccelData(&ax, &ay, &az);
+    sprintf(buff, "acc:%f,%f,%f", ax, ay, az);
+    Serial.println(buff);
+    Serial.flush();
+    
+    float p, r, y;
+    M5.IMU.getAhrsData(&p, &r, &y);
+    sprintf(buff, "pitch,roll,yaw:%f,%f,%f", p,r,y);
+    Serial.println(buff);
+    Serial.flush();
 }
