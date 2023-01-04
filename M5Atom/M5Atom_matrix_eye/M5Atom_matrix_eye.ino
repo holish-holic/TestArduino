@@ -7,6 +7,7 @@ void look(int x, int y);
 
 void setup()
 {
+    //Serial.begin(115200);
     M5.begin(true, false, true); //シリアルポートバッファをクリアし、シリアルポートのボーレートを115200に設定し、LEDマトリックスを初期化する。 清空串口缓区,设置串口波特率为115200；初始化led矩阵
     M5.dis.fillpix(0x000000); // 0xff0000をLEDドットマトリクス全体に塗りつぶす。 将 0xff0000 填充至整个LED点阵
     //delay(50);
@@ -45,16 +46,19 @@ loop()関数は、プログラムが繰り返し実行される無限ループ�
 loop()函数是一个死循，其中的序会不断的重复运行 */
 void loop()
 {
-
+    Serial.println('a');
     look(1, 1);
     delay(1000);
 
+    Serial.println("bbbbb");
     look(2, 2);
     delay(1000);
 
+    Serial.println("ccccc");
     look(3, 1);
     delay(1000);
 
+    Serial.println("dd");
     look(1, 4);
     delay(1000);
 }
