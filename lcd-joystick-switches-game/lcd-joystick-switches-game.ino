@@ -1,15 +1,12 @@
 
 #include <LiquidCrystal.h>
 
-
+//LCD
 // 変数の生成とPINの割り当て
 // rs:7 en:8 d4:9 d5:10 d6:11 d7:12　に対応
 LiquidCrystal lcd(7, 8, 9, 10, 11, 12);
 
-
-
-
-
+//Button
 //   X
 // Y   A
 //   B
@@ -18,8 +15,10 @@ int switchPinY=3;
 int switchPinA=5;
 int switchPinB=4;
 
+//Loop内のステート管理用
 int loopState=0;
 
+//オブジェクトの姿勢
 struct Transform
 {
   int posx;
@@ -27,6 +26,7 @@ struct Transform
   bool dirr;
   bool active;
 
+  //  画面外かどうか？
   bool outside(const Transform& t) {
     if (t.posx < 0 || t.posx > 16
     || t.posy < 0 || t.posy > 2
@@ -37,6 +37,7 @@ struct Transform
   }
 };
 
+//ロゴ
 class Logo {
 public: 
   Transform transform;
@@ -73,7 +74,7 @@ Logo logoNintendo("Nintendo");
 Logo logoSwitch("Switch");
 Logo logo3("3");
 
-
+//プレイヤー
 class Player
 {
 public:
@@ -96,6 +97,7 @@ public:
 };
 Player player;
 
+//弾
 class Bullet
 {
 public:
@@ -115,8 +117,10 @@ public:
   }
 };
 Bullet bullet[32];
+//次発射できる弾インデックス
 int bulletFireCount=0;
 
+//敵
 class Enemy{
 public:
   Enemy()
@@ -141,8 +145,11 @@ public:
   }
 };
 Enemy enemy[16];
+
+//配列サイズ取得マクロ
 #define ARRAYSIZE(array) (sizeof(array)/sizeof(array[0]))
 
+//初期化
 void setup() {
 
 
@@ -161,17 +168,19 @@ void setup() {
   pinMode(switchPinX, INPUT_PULLUP);     // ボタンスイッチ用に入力に設定
   pinMode(switchPinY, INPUT_PULLUP);     // ボタンスイッチ用に入力に設定
 
-  lcd.begin(16, 2);
-  lcd.clear();
+  //LCD初期化
+  lcd.begin(16, 2); //表示サイズを設定
+  lcd.clear();  //画面をクリアする
 
   //シリアル通信の初期処理を行う
   Serial.begin(9600);
   
+  //プレイヤー初期化
   player.transform.posx = 7;
   player.transform.posy = 1;
   player.transform.active = true;
   player.transform.dirr = true;
-
+  //弾初期化
   for (int i=0; i< ARRAYSIZE(bullet); ++i){
     Bullet& b = bullet[i];
     b.transform.posx=0;
@@ -181,7 +190,7 @@ void setup() {
     //Serial.println(i);
   }
   bulletFireCount=0;
-
+  //敵初期化
   for (int i=0; i< ARRAYSIZE(enemy); ++i){
     Enemy& e = enemy[i];
     e.transform.posx=0;
@@ -191,7 +200,7 @@ void setup() {
     e.moveInterval = 0;
     //Serial.println(i);
   }
-
+  //ロゴ初期化
   logoNintendo.transform.posx=4;
   logoNintendo.transform.posy=0;
   logoNintendo.transform.active=false;
@@ -206,7 +215,7 @@ void setup() {
   logo3.transform.dirr=false;
 }
 
-
+//ジョイスティックのアナログ値を-1.0～+1.0で返す
 float normalizeJoystick(float src)
 {
   const float resolution = 1024.0f;
@@ -215,6 +224,7 @@ float normalizeJoystick(float src)
   return src;
 }
 
+//弾発射
 void fire(int posx, int posy, bool mover)
 {
   Bullet& b = bullet[bulletFireCount];
@@ -228,6 +238,7 @@ void fire(int posx, int posy, bool mover)
   player.bulletInterval = 4;
 }
 
+//タイトルロゴ
 void loopShowLogo() {
 
   if (!logoNintendo.transform.active) {
@@ -257,13 +268,10 @@ void loopShowLogo() {
 
   lcd.setCursor(logo3.transform.posx, logo3.transform.posy);
   lcd.print(logo3.displayLogo());
-  //lcd.setCursor(logoSwitch.transform.posx, logoSwitch.transform.posy);
-  //lcd.print("Switch");
-
-  //lcd.setCursor(logo3.transform.posx, logo3.transform.posy);
-  //lcd.print("3");  
+  
   delay(50);
 
+  //ボタン入力によって次のステートへ遷移する
   if (LOW == digitalRead(switchPinA))  // ピンよりデータ取得
   {
     ++loopState;
@@ -271,7 +279,9 @@ void loopShowLogo() {
   }
 }
 
+//敵の登場インターバル
 int enemyAppearCount = 80;
+//敵登場処理
 void appearEnemy() {
   --enemyAppearCount;
   if (enemyAppearCount < 0) {
@@ -293,8 +303,11 @@ void appearEnemy() {
     enemyAppearCount=30;
   }
 }
+
+//ゲームメイン
 void loopGame() {
   
+  //プレイヤー入力処理
   //x軸方向とy軸方向の値を取得する
   float nml_x = normalizeJoystick(analogRead(A0));
   float nml_y = normalizeJoystick(analogRead(A1));
@@ -310,7 +323,7 @@ void loopGame() {
   if (nml_y > 0.5f) ++player.transform.posy;
   else if (nml_y < -0.5f) --player.transform.posy;
   player.transform.posy = constrain(player.transform.posy, 0, 1);
-
+  //弾発射入力処理
   if (LOW == digitalRead(switchPinA))  // ピンよりデータ取得
   {
     if (player.canFire()) {
@@ -319,7 +332,7 @@ void loopGame() {
     }
   }
   
-
+  //各更新
   player.update();
   for (int i=0; i< ARRAYSIZE(bullet); ++i)
   {
@@ -331,6 +344,7 @@ void loopGame() {
     Enemy& e = enemy[i];
     e.update();
   }
+  //弾と敵の当たり判定
   for (int bi=0; bi< ARRAYSIZE(bullet); ++bi)
   {
     Bullet& b = bullet[bi];
@@ -347,7 +361,7 @@ void loopGame() {
     }
   }
   
-
+  //描画
   lcd.clear();
   
   for (int i=0; i< ARRAYSIZE(enemy); ++i){
@@ -369,11 +383,13 @@ void loopGame() {
 
   delay(100);
 }
+//何も表示しない状態
 void loopClear(){
   lcd.clear();
   delay(1000);
   ++loopState;
 }
+//メインループ
 void loop(){
   switch (loopState){
     case 0: loopClear();
